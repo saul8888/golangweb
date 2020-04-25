@@ -6,6 +6,7 @@ import (
 	"goweb/database"
 	"goweb/helper"
 	"goweb/product"
+	"net/http"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -21,9 +22,6 @@ func main() {
 	//customer
 	var customerRepository = customer.NewRepository(dbconection)
 	var customerService = customer.NewService(customerRepository)
-	//orders
-	//var orderRepository = orders.NewRepository(dbconection)
-	//var orderService = orders.NewService(orderRepository)
 	//authentication
 	var autheRepository = authentication.NewRepository(dbconection)
 	var autheService = authentication.NewService(autheRepository)
@@ -38,20 +36,22 @@ func main() {
 	//define api version
 	r := route.Group("/api")
 	authentication.Route(r, autheService)
-	r.Use(middleware.BasicAuth(he))
+
+	// Configure middleware with the custom claims type
+	r.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+		Claims:     &authentication.Claim{},
+		SigningKey: authentication.Keys(),
+	}))
+	//r.POST("/hola", hola, authentication.ConfigToken)
 	product.Route(r, productService)
 	customer.Route(r, customerService)
-	//product.Ro(r)
 
 	// Start server
 	//database.DisconnectDB(clientconection)
-	route.Logger.Fatal(route.Start(":1323"))
+	route.Logger.Fatal(route.Start(":8000"))
 
 }
 
-func he(username, password string, c echo.Context) (bool, error) {
-	if username == "sa" && password == "sa" {
-		return true, nil
-	}
-	return false, nil
+func hola(c echo.Context) error {
+	return c.String(http.StatusOK, "Welcome hola")
 }

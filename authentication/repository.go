@@ -41,6 +41,7 @@ type repository struct {
 func NewRepository(dbconection *mongo.Database) Repository {
 	//--------------------init token----------------------//
 	//the read archive in format bytes for save  the keys private anad public
+
 	privateBytes, err := ioutil.ReadFile("./private.rsa")
 	if err != nil {
 		log.Fatal("private key was not read")
@@ -92,9 +93,11 @@ func (repo *repository) GenerateJWT(user Customer) string {
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	//token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	//encode to base64
-	result, err := token.SignedString(privateKey)
+	result, err := token.SignedString(Keys())
+	//result, err := token.SignedString(privateKey)
 	if err != nil {
 		log.Fatal("could not sign private token")
 	}
@@ -108,13 +111,3 @@ func (repo *repository) ValidateToken(w *echo.Response, r *http.Request) (*jwt.T
 		})
 	return token, err
 }
-
-/*
-func (repo *repository) ValidateToken(w http.ResponseWriter, r *http.Request) (*jwt.Token, error) {
-	token, err := request.ParseFromRequestWithClaims(r, request.OAuth2Extractor, &Claim{},
-		func(token *jwt.Token) (interface{}, error) {
-			return publicKey, nil
-		})
-	return token, err
-}
-*/

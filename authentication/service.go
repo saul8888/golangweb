@@ -23,7 +23,6 @@ func NewService(repo Repository) Service {
 }
 
 func (s *service) GenerateCustomer(context echo.Context) (err error) {
-
 	date := new(dateValidate)
 	if err = context.Bind(date); err != nil {
 		return
@@ -31,7 +30,8 @@ func (s *service) GenerateCustomer(context echo.Context) (err error) {
 	customer, err := s.repo.GenerateCustomer(date)
 	if err != nil {
 		panic(err)
-	} else {
+	}
+	if customer.Name != "" && customer.Email != "" {
 		token := s.repo.GenerateJWT(*customer)
 		result := Responsetoken{Token: token}
 		jsonResult, err := json.Marshal(result)
@@ -41,42 +41,53 @@ func (s *service) GenerateCustomer(context echo.Context) (err error) {
 		}
 		context.Response().WriteHeader(http.StatusOK)
 		context.Response().Header().Set("Content-Type", "application/json")
-		//responseJSON(w, newUser)
+		context.Response().Write(jsonResult)
+	} else {
+		context.Response().WriteHeader(http.StatusForbidden)
+		result := Responsetoken{Token: "usser or password invalid"}
+		jsonResult, _ := json.Marshal(result)
+		fmt.Println(context.Response(), "usser or password invalid")
 		context.Response().Write(jsonResult)
 	}
 
-	//fmt.Println(*customer)
-	return context.JSON(http.StatusOK, customer)
+	//return context.JSON(http.StatusOK, jsonResult)
+	return nil
 }
 
 func (s *service) ValidateToken(context echo.Context) error {
-	token, err := s.repo.ValidateToken(context.Response(), context.Request())
-	if err != nil {
-		switch err.(type) {
-		case *jwt.ValidationError:
-			vErr := err.(*jwt.ValidationError)
-			switch vErr.Errors {
-			case jwt.ValidationErrorExpired:
-				fmt.Fprintln(context.Response(), "your token expired")
-				//return
-			case jwt.ValidationErrorSignatureInvalid:
-				fmt.Fprintln(context.Response(), "the signature does not match")
-				//return
+	user := context.Get("user").(*jwt.Token)
+	claims := user.Claims.(*Claim)
+	name := claims.Name
+	return context.String(http.StatusOK, "Welcome "+name+"!")
+	/*
+		token, err := s.repo.ValidateToken(context.Response(), context.Request())
+		if err != nil {
+			switch err.(type) {
+			case *jwt.ValidationError:
+				vErr := err.(*jwt.ValidationError)
+				switch vErr.Errors {
+				case jwt.ValidationErrorExpired:
+					fmt.Fprintln(context.Response(), "your token expired")
+					//return
+				case jwt.ValidationErrorSignatureInvalid:
+					fmt.Fprintln(context.Response(), "the signature does not match")
+					//return
+				default:
+					fmt.Fprintln(context.Response(), "the signature does not match")
+					//return
+				}
 			default:
-				fmt.Fprintln(context.Response(), "the signature does not match")
+				fmt.Fprintln(context.Response(), "your token is not valid")
 				//return
 			}
-		default:
-			fmt.Fprintln(context.Response(), "your token is not valid")
-			//return
 		}
-	}
-	if token.Valid {
-		context.Response().WriteHeader(http.StatusAccepted)
-		fmt.Fprintln(context.Response(), "welcome to the system")
-	} else {
-		context.Response().WriteHeader(http.StatusUnauthorized)
-		fmt.Fprintln(context.Response(), "your token is not valid")
-	}
-	return nil
+		if token.Valid {
+			context.Response().WriteHeader(http.StatusAccepted)
+			fmt.Fprintln(context.Response(), "welcome to the system")
+		} else {
+			context.Response().WriteHeader(http.StatusUnauthorized)
+			fmt.Fprintln(context.Response(), "your token is not valid")
+		}
+		return nil
+	*/
 }

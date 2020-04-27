@@ -1,15 +1,13 @@
 package main
 
 import (
-	"goweb/authentication"
-	"goweb/customer"
-	"goweb/database"
-	"goweb/helper"
-	"goweb/product"
-	"net/http"
-
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/saul8888/goweb/authentication"
+	"github.com/saul8888/goweb/customer"
+	"github.com/saul8888/goweb/database"
+	"github.com/saul8888/goweb/helper"
+	"github.com/saul8888/goweb/product"
 )
 
 func main() {
@@ -42,16 +40,11 @@ func main() {
 		Claims:     &authentication.Claim{},
 		SigningKey: authentication.Keys(),
 	}))
-	//r.POST("/hola", hola, authentication.ConfigToken)
 	product.Route(r, productService)
 	customer.Route(r, customerService)
 
 	// Start server
 	//database.DisconnectDB(clientconection)
-	route.Logger.Fatal(route.Start(":8000"))
+	route.Logger.Fatal(route.Start(":3000"))
 
-}
-
-func hola(c echo.Context) error {
-	return c.String(http.StatusOK, "Welcome hola")
 }

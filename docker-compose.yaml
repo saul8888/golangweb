@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  goweb:
+    build: .
+    image: eatos
+    container_name: eatos
+    ports:
+        - "8000:3000"

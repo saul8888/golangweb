@@ -9,3 +9,7 @@ it is created in the tokens folder
 **private key**
 
 `openssl genrsa -out private.rsa 1024`
+
+**compilate**
+
+`sudo docker-compose up`

@@ -6,7 +6,6 @@ FROM golang:alpine
 
 RUN mkdir /app
 ADD . /app
-# Copy and download dependency using go mod
 WORKDIR /app
 
 # Copy and download dependency using go mod
